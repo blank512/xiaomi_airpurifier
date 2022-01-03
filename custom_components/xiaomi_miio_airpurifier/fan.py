@@ -109,6 +109,8 @@ DOMAIN = "xiaomi_miio_airpurifier"
 CONF_MODEL = "model"
 CONF_RETRIES = "retries"
 
+MODEL_AIRPURIFIER_3C = "zhimi.airpurifier.mb4"
+
 MODEL_AIRPURIFIER_V1 = "zhimi.airpurifier.v1"
 MODEL_AIRPURIFIER_V2 = "zhimi.airpurifier.v2"
 MODEL_AIRPURIFIER_V3 = "zhimi.airpurifier.v3"
@@ -167,6 +169,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
         vol.Optional(CONF_MODEL): vol.In(
             [
+                MODEL_AIRPURIFIER_3C,
                 MODEL_AIRPURIFIER_V1,
                 MODEL_AIRPURIFIER_V2,
                 MODEL_AIRPURIFIER_V3,
@@ -318,7 +321,7 @@ ATTR_RAW_SPEED = "raw_speed"
 # Fan Leshow SS4
 ATTR_ERROR_DETECTED = "error_detected"
 
-PURIFIER_MIOT = [MODEL_AIRPURIFIER_3, MODEL_AIRPURIFIER_3H, MODEL_AIRPURIFIER_ZA1]
+PURIFIER_MIOT = [MODEL_AIRPURIFIER_3, MODEL_AIRPURIFIER_3H, MODEL_AIRPURIFIER_ZA1, MODEL_AIRPURIFIER_3C]
 HUMIDIFIER_MIOT = [MODEL_AIRHUMIDIFIER_CA4]
 
 # AirDogX7SM
@@ -430,6 +433,22 @@ AVAILABLE_ATTRIBUTES_AIRPURIFIER_3 = {
     ATTR_FILTER_RFID_PRODUCT_ID: "filter_rfid_product_id",
     ATTR_FILTER_RFID_TAG: "filter_rfid_tag",
     ATTR_FILTER_TYPE: "filter_type",
+    ATTR_FAN_LEVEL: "fan_level",
+}
+
+AVAILABLE_ATTRIBUTES_AIRPURIFIER_3C = {
+    ATTR_AIR_QUALITY_INDEX: "aqi",
+    ATTR_MODE: "mode",
+    ATTR_FILTER_HOURS_USED: "filter_hours_used",
+    ATTR_FILTER_LIFE: "filter_life_remaining",
+    ATTR_FAVORITE_LEVEL: "favorite_level",
+    ATTR_CHILD_LOCK: "child_lock",
+    ATTR_LED: "led",
+    ATTR_MOTOR_SPEED: "motor_speed",
+    ATTR_AVERAGE_AIR_QUALITY_INDEX: "average_aqi",
+    ATTR_USE_TIME: "use_time",
+    ATTR_BUZZER: "buzzer",
+    ATTR_LED_BRIGHTNESS: "led_brightness",
     ATTR_FAN_LEVEL: "fan_level",
 }
 
@@ -695,6 +714,7 @@ OPERATION_MODES_AIRPURIFIER = ["Auto", "Silent", "Favorite", "Idle"]
 OPERATION_MODES_AIRPURIFIER_PRO = ["Auto", "Silent", "Favorite"]
 OPERATION_MODES_AIRPURIFIER_PRO_V7 = OPERATION_MODES_AIRPURIFIER_PRO
 OPERATION_MODES_AIRPURIFIER_2S = ["Auto", "Silent", "Favorite"]
+OPERATION_MODES_AIRPURIFIER_3C = ["Auto", "Silent", "Favorite"]
 OPERATION_MODES_AIRPURIFIER_2H = OPERATION_MODES_AIRPURIFIER
 OPERATION_MODES_AIRPURIFIER_3 = ["Auto", "Silent", "Favorite", "Fan"]
 OPERATION_MODES_AIRPURIFIER_V3 = [
@@ -787,6 +807,16 @@ FEATURE_FLAGS_AIRPURIFIER_3 = (
     | FEATURE_SET_FAN_LEVEL
     | FEATURE_SET_LED_BRIGHTNESS
 )
+
+FEATURE_FLAGS_AIRPURIFIER_3C = (
+    FEATURE_SET_BUZZER
+    | FEATURE_SET_CHILD_LOCK
+    | FEATURE_SET_LED
+    | FEATURE_SET_FAVORITE_LEVEL
+    | FEATURE_SET_FAN_LEVEL
+    | FEATURE_SET_LED_BRIGHTNESS
+)
+
 
 FEATURE_FLAGS_AIRPURIFIER_V3 = (
     FEATURE_SET_BUZZER | FEATURE_SET_CHILD_LOCK | FEATURE_SET_LED
@@ -951,6 +981,10 @@ SERVICE_SCHEMA_FAVORITE_LEVEL = AIRPURIFIER_SERVICE_SCHEMA.extend(
     {vol.Required(ATTR_LEVEL): vol.All(vol.Coerce(int), vol.Clamp(min=0, max=17))}
 )
 
+SERVICE_SCHEMA_FAVORITE_LEVEL_3C = AIRPURIFIER_SERVICE_SCHEMA.extend(
+    {vol.Required(ATTR_LEVEL): vol.All(vol.Coerce(int), vol.Clamp(min=300, max=2200))}
+)
+
 SERVICE_SCHEMA_FAN_LEVEL = AIRPURIFIER_SERVICE_SCHEMA.extend(
     {vol.Required(ATTR_LEVEL): vol.All(vol.Coerce(int), vol.Clamp(min=1, max=3))}
 )
@@ -1020,6 +1054,10 @@ SERVICE_TO_METHOD = {
         "schema": SERVICE_SCHEMA_LED_BRIGHTNESS,
     },
     SERVICE_SET_FAVORITE_LEVEL: {
+        "method": "async_set_favorite_level",
+        "schema": SERVICE_SCHEMA_FAVORITE_LEVEL,
+    },
+    SERVICE_SET_FAVORITE_LEVEL_3C: {
         "method": "async_set_favorite_level",
         "schema": SERVICE_SCHEMA_FAVORITE_LEVEL,
     },
@@ -1403,6 +1441,10 @@ class XiaomiAirPurifier(XiaomiGenericDevice):
             self._device_features = FEATURE_FLAGS_AIRPURIFIER_V3
             self._available_attributes = AVAILABLE_ATTRIBUTES_AIRPURIFIER_V3
             self._preset_modes = OPERATION_MODES_AIRPURIFIER_V3
+        elif self._model == MODEL_AIRPURIFIER_3C:
+            self._device_features = FEATURE_FLAGS_AIRPURIFIER_3C
+            self._available_attributes = AVAILABLE_ATTRIBUTES_AIRPURIFIER_3C
+            self._preset_modes = OPERATION_MODES_AIRPURIFIER_3C    
         else:
             self._device_features = FEATURE_FLAGS_AIRPURIFIER
             self._available_attributes = AVAILABLE_ATTRIBUTES_AIRPURIFIER
