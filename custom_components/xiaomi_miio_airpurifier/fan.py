@@ -1057,10 +1057,6 @@ SERVICE_TO_METHOD = {
         "method": "async_set_favorite_level",
         "schema": SERVICE_SCHEMA_FAVORITE_LEVEL,
     },
-    SERVICE_SET_FAVORITE_LEVEL_3C: {
-        "method": "async_set_favorite_level",
-        "schema": SERVICE_SCHEMA_FAVORITE_LEVEL,
-    },
     SERVICE_SET_FAVORITE_SPEED: {
         "method": "async_set_favorite_speed",
         "schema": SERVICE_SCHEMA_FAVORITE_SPEED,
